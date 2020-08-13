@@ -17,3 +17,7 @@
 ## GUI界面： 
 * ![](https://img.shields.io/badge/unfinished-%C3%97-red)PyQt5  
 
+
+
+
+https://img.shields.io/badge/finished-%E2%88%9A-green
