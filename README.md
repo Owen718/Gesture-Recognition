@@ -6,8 +6,7 @@
   -----------
 # 本项目目前设计方案：<br>
 ## 视频流处理：
-* 图像的获取  (https://img.shields.io/badge/unfinished-%C3%97-red)
-* 手势位置ROI的截取
+* 图像的获取 [![](https://img.shields.io/badge/unfinished-%C3%97-red)]
 ## 图像预处理：
 * 肤色检测 + 二值化处理
 * 形态学处理
