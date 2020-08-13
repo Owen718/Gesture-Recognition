@@ -6,7 +6,7 @@
   -----------
 # 本项目目前设计方案：<br>
 ## 视频流处理：
-* 图像的获取
+* 图像的获取 [![](https://travis-ci.org/Alamofire/Alamofire.svg?branch=master)](https://travis-ci.org/Alamofire/Alamofire)
 * 手势位置ROI的截取
 ## 图像预处理：
 * 肤色检测 + 二值化处理
