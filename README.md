@@ -4,7 +4,7 @@
 ## 超识是一款用python写的快速手势识别软件。 <br>
 # 本项目目前设计方案：<br>
 ## 视频流处理：
-* ![](https://img.shields.io/badge/unfinished-%C3%97-red)图像的获取 
+* ![](https://img.shields.io/badge/finished-%E2%88%9A-green)图像的获取 
 ## 图像预处理：
 * ![](https://img.shields.io/badge/unfinished-%C3%97-red)肤色检测 + 二值化处理  
 * ![](https://img.shields.io/badge/unfinished-%C3%97-red)形态学处理  
