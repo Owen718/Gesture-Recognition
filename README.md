@@ -1,6 +1,6 @@
 
-# Super-Gesture识别项目
- <center> A Gesture-Recognition software by python<center> <br>
+# <center>Super-Gesture识别项目</center><br>
+ A Gesture-Recognition software by python 
 超识是一款用python写的快速手势识别软件。
 ----------------------------
 # 本项目目前设计方案：<br>
