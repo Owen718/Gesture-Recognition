@@ -1,8 +1,7 @@
 
 # Super-Gesture识别项目
- <center> A Gesture-Recognition software by python<center> 
- ![](https://img.shields.io/badge/language-python-green)
-  超识是一款用python写的快速手势识别软件。
+ <center> A Gesture-Recognition software by python<center> <br>
+超识是一款用python写的快速手势识别软件。
 ----------------------------
 # 本项目目前设计方案：<br>
 ## 视频流处理：
@@ -19,3 +18,4 @@
 ## GUI界面： 
 * ![](https://img.shields.io/badge/unfinished-%C3%97-red)PyQt5  
 
+ ![](https://img.shields.io/badge/language-python-green)
