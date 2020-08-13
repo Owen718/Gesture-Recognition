@@ -10,7 +10,7 @@
 ## 图像预处理：
 * 肤色检测 + 二值化处理  ![](https://img.shields.io/badge/unfinished-%C3%97-red)
 * 形态学处理  ![](https://img.shields.io/badge/unfinished-%C3%97-red)
-* 轮廓提取
+* 轮廓提取  ![](https://img.shields.io/badge/unfinished-%C3%97-red)
 ## 特征提取：
 * 傅里叶算子提取  ![](https://img.shields.io/badge/unfinished-%C3%97-red)
 * 建立特征库：数据增强、计算手势库特征  ![](https://img.shields.io/badge/unfinished-%C3%97-red)
