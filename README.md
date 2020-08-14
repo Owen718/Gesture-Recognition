@@ -6,9 +6,9 @@
 ## 视频流处理：
 * ![](https://img.shields.io/badge/finished-ok-green) 图像的获取 
 ## 图像预处理：
-* ![](https://img.shields.io/badge/unfinished-%C3%97-red)肤色检测 + 二值化处理  
-* ![](https://img.shields.io/badge/unfinished-%C3%97-red)形态学处理  
-* ![](https://img.shields.io/badge/unfinished-%C3%97-red)轮廓提取  
+* ![](https://img.shields.io/badge/finished-ok-green)肤色检测 + 二值化处理  
+* ![]((https://img.shields.io/badge/finished-ok-green)形态学处理  
+* ![](https://img.shields.io/badge/finished-ok-green)轮廓提取  
 ## 特征提取：
 * ![](https://img.shields.io/badge/unfinished-%C3%97-red)傅里叶算子提取  
 * ![](https://img.shields.io/badge/unfinished-%C3%97-red)建立特征库：数据增强、计算手势库特征 
