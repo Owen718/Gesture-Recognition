@@ -1,4 +1,6 @@
 import cv2
+import process_recognition
+
 
 font = cv2.FONT_HERSHEY_SIMPLEX #设置字体
 size = 0.5 #设置大小
@@ -13,6 +15,11 @@ if __name__ == "__main__":
         ret, frame = cap.read() #读取摄像头的内容
         frame = cv2.flip(frame, 2)
         roi = frame[y0:y0+h0,x0:x0+w0] #取手势所在框图并进行处理
+        roi = process_recognition.img_process(roi)
+        roi = process_recognition.skin_detection_YCrCb_filtered(roi)
+        roi = process_recognition.morpy_porcess(roi)
+        roi = process_recognition.hands_contours(roi)
+
         key = cv2.waitKey(1) & 0xFF#按键判断并进行一定的调整
         #按'a''d''w''s'分别将选框左移，右移，上移，下移
         #按'q'键退出录像
@@ -28,5 +35,7 @@ if __name__ == "__main__":
             break
         cv2.imshow('frame', frame)#播放摄像头的内容
         cv2.imshow('roi',roi)
+
+
     cap.release()
     cv2.destroyAllWindows() #关闭所有窗口
