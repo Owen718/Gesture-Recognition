@@ -1,24 +1,31 @@
-import cv2
-import numpy as np 
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+"""
+@Time    : 2018-11-09 21：39
+@Author  : jianjun.wang
+@Email   : alanwang6584@gmail.com
+"""
 
-def cv_show(name,img):
-    cv2.imshow(name,img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+import numpy as np
+import cv2 as cv
+ 
+img = np.zeros((320, 320, 3), np.uint8) #生成一个空灰度图像
+#print img.shape # 输出：(480, 480, 3)
 
+point_size = 1
+point_color = (0, 0, 255) # BGR
+thickness = 4 # 可以为 0 、4、8
 
+# 要画的点的坐标
+points_list = [(160, 160), (136, 160), (150, 200), (200, 180), (120, 150), (145, 180)]
 
-img = cv2.imread(r'C:\Users\Owen\Pictures\skin_test.jpg')
-cv_show('img',img)
-YCrCb = cv2.cvtColor(img, cv2.COLOR_BGR2YCR_CB) #转换至YCrCb空间
-(y,cr,cb) = cv2.split(YCrCb) #拆分出Y,Cr,Cb值
-skin = np.zeros(cr.shape, dtype = np.uint8)
+for point in points_list:
+	cv.circle(img, point, point_size, point_color, thickness)
 
+# 画圆，圆心为：(160, 160)，半径为：60，颜色为：point_color，实心线
+cv.circle(img, (160, 160), 60, point_color, 0)
 
-res,cr = cv2.threshold(cr,130,255,cv2.THRESH_BINARY)
-res,cb = cv2.threshold(cb,77,127,cv2.THRESH_BINARY)
-
-skin = cv2.bitwise_and(cr,cb,dst=None,mask = None)
-roi = cv2.bitwise_and(img,img, mask = skin)
-
-cv_show('roi',roi)
+cv.namedWindow("image")
+cv.imshow('image', img)
+cv.waitKey (10000) # 显示 10000 ms 即 10s 后消失
+cv.destroyAllWindows()
