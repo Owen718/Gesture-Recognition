@@ -46,10 +46,10 @@ def hands_contours(roi,roi_original):
     #contours = h  #列表中的第一个
     ret = np.zeros(shape=[roi.shape[0],roi.shape[1],3],dtype = np.uint8)  #创建一个三通道的空白图像
   
-    cv2.drawContours(ret,h,-1,(0,0,255),2)  #绘制近似前的轮廓（红）
+    cv2.drawContours(roi_original,h,-1,(0,0,255),2)  #绘制近似前的轮廓（红）
 
     for con in h:
-        if 70 < cv2.contourArea(con):
+        if 50 < cv2.contourArea(con):
             hull = cv2.convexHull(con,hull=None,clockwise=None,returnPoints=True)
             #hull = cv2.convexHull(contour,hull=None,clockwise=None,returnPoints=True)
             for hull_point in hull:
