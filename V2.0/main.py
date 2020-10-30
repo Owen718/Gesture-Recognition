@@ -1,6 +1,8 @@
 import cv2
-import process_recognition
 import time
+from gestrue import gestrue_recognition
+import numpy as np
+
 
 font = cv2.FONT_HERSHEY_SIMPLEX #设置字体
 size = 0.5 #设置大小
@@ -10,27 +12,31 @@ x0,y0 = 300, 100 #设置选取位置
 circle_xy=[]  #存放掌心位置数据的列表
 n=1
 cap = cv2.VideoCapture(0) #开摄像头
- 
+
+gestrue = gestrue_recognition() 
+
 if __name__ == "__main__":
     while(1):
-        ret, frame = cap.read() #读取摄像头的内容
-        frame = cv2.flip(frame, 2)
         start = time.time()
+        ret, frame = cap.read() #读取摄像头的内容
+        
+        frame = cv2.flip(frame, 2)
         roi = frame[y0:y0+h0,x0:x0+w0] #取手势所在框图并进行处理
         roi_original = roi.copy()
-        roi = process_recognition.skin_detection_YCrCb_filtered(roi)  #皮肤检测与识别
-        roi = process_recognition.img_process(roi)  #去噪、二值化
-        cv2.imshow('binary',roi)
-   
-        circle_x,circle_y,radius = process_recognition.distance_transform(roi) #使用距离变换求手掌心位置
-        circle_xy.append((circle_x,circle_y))
-        if circle_y !=0 and abs(circle_y-circle_xy[n-1][1])/circle_y > 0.1:  #若y值数据变化幅度大于10%
-            circle_y = (circle_y + circle_xy[n-1]) / 2  #取均值
-        n+=1
+        
+        roi_processed = gestrue.skin_detection_YCrCb_filtered(roi_original)  #利用YCrCb颜色模型进行图像分割
+        roi_processed = gestrue.img_process(roi_processed)   #滤波处理
+        
+        zeros = np.ones((roi_processed.shape[0],roi_processed.shape[1]),dtype = np.uint8)
+        zeros *=255
+        roi_draw = cv2.merge([zeros,zeros,zeros])  #创建空白图像
 
-        roi,roi_draw,keypoints = process_recognition.hands_contours(roi,roi_original,circle_x,circle_y,radius) #绘制轮廓并对特征点进行筛选
-        roi_draw,estimate_roi= process_recognition.gesture_estimate(roi_draw,circle_x,circle_y,radius,keypoints)  #姿态估计
-  
+        roi_draw,roi_processed,hand_x,hand_y,hand_r= gestrue.area_filter(roi_processed,roi_draw)  #面积滤波
+        finger_list,roi_draw = gestrue.find_fingers(roi_processed,roi_draw,hand_x,hand_y,hand_r)
+
+
+
+        
         key = cv2.waitKey(1) & 0xFF#按键判断并进行一定的调整
         #按'a''d''w''s'分别将选框左移，右移
         # ，上移，下移
@@ -44,6 +50,8 @@ if __name__ == "__main__":
             x0 += 10
         elif key == ord('a') and x0 > 10:
             x0 -= 10
+        elif key == ord('v'):  #保存当前帧
+            cv2.imwrite(str(time.strftime("%Y-%m-%d-%H_%M_%S",time.localtime()))+".jpg",roi_processed)
         if key == ord('q'):
             break
 
@@ -56,7 +64,9 @@ if __name__ == "__main__":
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255),
                     1)
         cv2.imshow('frame', frame)#播放摄像头的内容
-        cv2.imshow('estimate_roi',estimate_roi)
+
+        cv2.imshow('roi_origin',roi_original)
+        cv2.imshow('roi_processed',roi_processed)
         cv2.imshow('roi_draw',roi_draw)
 
 

@@ -1,12 +1,16 @@
 import cv2
 import numpy as np
+from skimage.measure import label
 
-def img_process(roi):   #图像去噪
-    roi = cv2.cvtColor(roi,cv2.COLOR_BGR2GRAY,)
-    blur = cv2.GaussianBlur(roi,(15,15),None)
-   
-    ret,binary = cv2.threshold(blur,55,255,cv2.THRESH_BINARY)
+def img_process(roi):   #图像去噪,最大连通域算法
+    roi = cv2.cvtColor(roi,cv2.COLOR_BGR2GRAY)
+    blur = cv2.GaussianBlur(roi,(3,3),None)
+    ret,binary = cv2.threshold(roi,55,255,cv2.THRESH_BINARY)
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(5, 5))
+    binary = cv2.dilate(binary,kernel)
+
     return binary
+
 
 def skin_detection_YCrCb(roi):  #肤色检测，从图像中分割出皮肤区域
     YCrCb = cv2.cvtColor(roi,cv2.COLOR_BGR2YCR_CB)
@@ -17,19 +21,20 @@ def skin_detection_YCrCb(roi):  #肤色检测，从图像中分割出皮肤区�
     return res
 
 
-def skin_detection_YCrCb_filtered(roi):#基于YCrCb颜色空间Cr,Cb范围筛选法
+def skin_detection_YCrCb_filtered(roi):#基于HCrCb混合肤色模型H,Cr,Cb范围筛选法
     YCrCb = cv2.cvtColor(roi, cv2.COLOR_BGR2YCR_CB) #转换至YCrCb空间
+    hsv = cv2.cvtColor(roi,cv2.COLOR_BGR2HSV)  #转换至HSV色彩空间
     (y,cr,cb) = cv2.split(YCrCb) #拆分出Y,Cr,Cb值
+    (h,s,v) = cv2.split(hsv)
     skin = np.zeros(cr.shape, dtype = np.uint8)
-    #roi_show = np.zeros(cr.shape,dtype = np.uint8)
-    #roi_show = 255
+    h[h>31]=0  #筛出h值为1-31的区域
     res,cr = cv2.threshold(cr,133,173,cv2.THRESH_BINARY)  #筛出130-175的值
     res,cb = cv2.threshold(cb,77,127,cv2.THRESH_BINARY)   #筛出77-127的值
-    skin = cv2.bitwise_and(cr,cb,dst=None,mask = None)  #与运算
-    #ret,skin = cv2.threshold(skin,10,250,cv2.THRESH_BINARY)
-    roi = cv2.bitwise_and(roi,roi, mask = skin)  #与运算
-    #roi_show = cv2.bitwise_and(roi_show,skin,mask= None)
+    skin = cv2.bitwise_and(cr,cb,dst=None,mask = None)  #cr cb运算
+    #skin = cv2.bitwise_and(skin,h,dst = None,mask = None)  #和h掩膜与运算
 
+    roi = cv2.bitwise_and(roi,roi, mask = skin)  #与运算
+    
     return roi
 
 def morpy_porcess(roi):  #形态学处理，进行开运算
@@ -46,30 +51,46 @@ def quasi_Euclidean_distance(point1,point2):  #准欧式距离 point1=(i,j) poin
         return int(0.4142 * abs(point1[0]-point2[0]) + abs(point1[1]-point2[1]))        
 
 
-
 def hands_contours(roi,roi_original,x,y,radius):  #轮廓绘制与关键点筛选
     canny = cv2.Canny(roi,50,200)  #边缘检测
     h,hierarchy= cv2.findContours(canny,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)  #寻找轮廓
     #ret = np.zeros(shape=[roi.shape[0],roi.shape[1],3],dtype = np.uint8)  #创建一个三通道的空白图像
     hands_keypoints = []
-    cv2.drawContours(roi_original,h,-1,(0,0,255),2)  #绘制近似前的轮廓（红）
+    #cv2.drawContours(roi_original,h,-1,(0,255,255),2)  #绘制近似前的轮廓
     cv2.circle(roi_original,(x,y),4,(255,0,0),3)  #标出手心(蓝色)
-    for con in h:
-        if 50 < cv2.contourArea(con):
-            hull = cv2.convexHull(con,hull=None,clockwise=None,returnPoints=True)  #求凸包
-            #defects = cv2.convexityDefects(con,hull)
-            for i,hull_point in enumerate(hull):
-                hull_point = (hull_point[0][0],hull_point[0][1])
-                if quasi_Euclidean_distance(hull_point,(x,y)) > radius-5 and hull_point[1]<roi_original.shape[0]-10: #筛除一部分点
-                    hands_keypoints.append(hull_point)
+    
+    
+    for con in h:  #计算各个轮廓的面积，并在轮廓中心标出
+        if len(h)!=1:
+            M = cv2.moments(con)  # 计算第一条轮廓的各阶矩,字典形式
+            if M["m00"]!=0:
+                center_x = int(M["m10"] / M["m00"])
+                center_y = int(M["m01"] / M["m00"])
+               # cv2.putText(roi_original,str(cv2.contourArea(con)),(center_x,center_y),cv2.FONT_HERSHEY_SIMPLEX,1,(0,0,255))
+                print(cv2.contourArea(con))
+    print("-----------------------------------")
+    
+    
+    sorted_cnts = sorted(h,key=cv2.contourArea,reverse=False)
+    max_con = sorted_cnts[0]
+    hull = cv2.convexHull(max_con,returnPoints=True)  #求凸包
+    cv2.drawContours(roi_original,max_con,-1,(0,0,255),2)
+    #defects = cv2.convexityDefects(max_con,hull)
+   
+    
+    for i,hull_point in enumerate(hull):
+        hull_point = (hull_point[0][0],hull_point[0][1])
+        if quasi_Euclidean_distance(hull_point,(x,y)) > radius-5 and hull_point[1]<roi_original.shape[0]-10: #筛除一部分点
+            hands_keypoints.append(hull_point)
 
     for i,pointi in enumerate(hands_keypoints):  #根据区域去重
         for j,pointj in enumerate(hands_keypoints):
             if quasi_Euclidean_distance(pointi,pointj) < 40 and i != j:
                 del(hands_keypoints[j])
-                    #del(hands_keypoints[i+1])
-
-                    #cv2.circle(roi_original,(x,y),radius=quasi_Euclidean_distance(hull_point,(x,y)),color=(255,255,255),thickness=1)
+                #del(hands_keypoints[i+1])
+                    
+            #cv2.circle(roi_original,(x,y),radius=quasi_Euclidean_distance(hull_point,(x,y)),color=(255,255,255),thickness=1)
+    
     return roi,roi_original,hands_keypoints
 
 def distance_transform(roi):  #距离变换求手心坐标
@@ -107,16 +128,18 @@ def gesture_estimate(roi,circle_x,circle_y,radius,hands_keypoints):  #姿态估�
     
  
         #cv2.line(roi,(0,0),(max_right_handspoint_x,0),color=(0,255,255),thickness=5)
-        #handpoints_all_length
+        handpoints_all_length
     for i,point in enumerate(hands_keypoints):  
         if point[1] > max_left_handspoint_y and point[0] < circle_x:
             del hands_keypoints[i]
   
 
-    if max_right_handspoint_x:
-        cv2.putText(roi,'right',(max_right_handspoint_x,max_right_handspoint_y),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0))
-    if max_left_handspoint_x:
-        cv2.putText(roi,'left',(max_left_handspoint_x,max_left_handspoint_y),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0))
+    #if max_right_handspoint_x:
+        
+        #cv2.putText(roi,'right',(max_right_handspoint_x,max_right_handspoint_y),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0))
+    #if max_left_handspoint_x:
+       
+        #cv2.putText(roi,'left',(max_left_handspoint_x,max_left_handspoint_y),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0))
 
 
     for i,point in enumerate(hands_keypoints):  #遍历指尖、划线
@@ -126,7 +149,7 @@ def gesture_estimate(roi,circle_x,circle_y,radius,hands_keypoints):  #姿态估�
             cv2.circle(estimate_roi,hands_keypoints[i],7,(0,0,255),thickness=-1)
             cv2.line(estimate_roi,hands_keypoints[i],(circle_x,circle_y),(0,0,0),5)
             cv2.putText(roi,str(i),hands_keypoints[i],cv2.FONT_HERSHEY_SIMPLEX,fontScale=1,color=(0,0,0))
-
+    cv2.circle(estimate_roi,(circle_x,circle_y),radius = radius,color = (255,100,100),thickness=2)
 
     return roi,estimate_roi
 
